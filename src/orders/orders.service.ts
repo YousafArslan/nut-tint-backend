@@ -1,23 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, Brackets, Repository } from 'typeorm';
 import { Orders } from './orders.entity';
-import { CreateOrderDto, GetOrdersDto, UpdateOrderDto } from './orders.dto';
+import {
+  CreateOrderDto,
+  GetOrdersDto,
+  GetPendingPyamentDto,
+  UpdateOrderDto,
+} from './orders.dto';
 import { validate } from 'class-validator'; // Import validate to manually validate DTO
 import { errorResponse, successResponse } from 'src/response.utils';
 import { User } from 'src/user/user.entity';
+import { Customers } from 'src/customers/customers.entity';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Orders) // Inject the TypeORM repository for Order
     private readonly orderRepository: Repository<Orders>,
+    @InjectRepository(Customers)
+    private readonly customersRepository: Repository<Customers>,
   ) {}
 
   // Create a new order
   async createOrder(orderData: CreateOrderDto, user: User): Promise<any> {
     try {
       const errors = await validate(orderData);
+
       if (errors.length > 0) {
         const errorMessages = errors.map((error) =>
           Object.values(error.constraints).join(', '),
@@ -28,10 +37,23 @@ export class OrdersService {
         );
       }
 
+      const { customerId } = orderData;
+
+      // Check if the customer exists
+      const customer = await this.customersRepository.findOne({
+        where: { id: customerId },
+      });
+      if (!customer) {
+        throw new NotFoundException(
+          'Customer with the given ID does not exist',
+        );
+      }
+
       // Assign createdBy relationship
       const order: any = this.orderRepository.create({
         ...orderData,
         createdBy: user, // Set the user object for createdBy
+        customer: customer,
       });
 
       await this.orderRepository.save(order);
@@ -46,24 +68,35 @@ export class OrdersService {
     }
   }
 
-  // Get all orders with optional date range filter
   async getAllOrders(getOrdersDto: GetOrdersDto): Promise<any> {
     try {
-      const { startDate, endDate } = getOrdersDto;
+      const { startDate, endDate, customerId } = getOrdersDto;
 
-      let query = 'SELECT * FROM "Orders" WHERE 1=1';
+      let query = `
+      SELECT 
+        o.*, 
+        c."shopName", 
+        c."name" 
+      FROM "Orders" o
+      LEFT JOIN "Customers" c ON o."customerId" = c."id"
+      WHERE 1=1
+    `;
       const queryParams: any[] = [];
 
       if (startDate) {
-        query += ' AND "createdAt" >= ?';
+        query += ' AND o."createdAt" >= ?';
         queryParams.push(startDate);
       }
 
       if (endDate) {
-        query += ' AND "createdAt" <= ?';
+        query += ' AND o."createdAt" <= ?';
         queryParams.push(endDate);
       }
 
+      if (customerId) {
+        query += ' AND o."customerId" = ?';
+        queryParams.push(customerId);
+      }
       const orders = await this.orderRepository.query(query, queryParams);
 
       return successResponse(orders, 'Orders fetched successfully');
@@ -78,42 +111,68 @@ export class OrdersService {
     try {
       const order: any = await this.orderRepository.findOne({
         where: { id }, // Find order by ID
-        relations: ['createdBy', 'updatedBy', 'deliveredBy'], // Include related entities
+        relations: ['createdBy', 'updatedBy', 'deliveredBy', 'customer'], // Include related entities
       });
 
       if (!order) {
         return errorResponse('Order not found', 404); // Return error if order doesn't exist
       }
-      return successResponse(order, 'Order fetched successfully');
+      const response = {
+        ...order,
+        customerId: order.customer?.id || null, // Include only the customer ID
+        shopName: order.customer?.shopName || null, // Include shopName
+        name: order.customer?.name || null, // Include name
+      };
+      delete response.customer;
+      return successResponse(response, 'Order fetched successfully');
     } catch (error) {
       console.error(error);
       return errorResponse('An error occurred while fetching the order', 500);
     }
   }
 
-  // Update an order
   async updateOrder(
     id: number,
     updateData: UpdateOrderDto,
     user: User,
   ): Promise<any> {
     try {
-      const order: any = await this.orderRepository.findOneBy({ id });
+      const order: any = await this.orderRepository.findOne({
+        where: { id },
+        relations: ['customer'], // Include the customer relation
+      });
+
       if (!order) {
         return errorResponse('Order not found', 404);
       }
 
-      // If delivery is true, set deliveredAt and deliveredBy
+      // Handle delivery update
       if (updateData.delivery === true) {
         order.deliveredAt = new Date().toISOString();
-        order.deliveredBy = user; // Set the user object for deliveredBy
+        order.deliveredBy = user;
       }
 
-      // Always set updatedBy
-      order.updatedBy = user; // Set the user object for updatedBy
+      // Handle customer update
+      if (updateData?.customerId) {
+        const customer = await this.customersRepository.findOne({
+          where: { id: updateData.customerId },
+        });
 
-      // Merge and save the updated order
+        if (!customer) {
+          throw new NotFoundException(
+            'Customer with the given ID does not exist',
+          );
+        }
+
+        order.customer = customer; // Assign the customer entity
+      }
+
+      // Always update updatedBy
+      order.updatedBy = user;
+
+      // Merge other updates
       Object.assign(order, updateData);
+
       await this.orderRepository.save(order);
 
       return successResponse(order, 'Order updated successfully');
@@ -138,44 +197,59 @@ export class OrdersService {
     }
   }
 
-  async getPendingPayments(): Promise<any> {
+  async getPendingPayments(body: GetPendingPyamentDto): Promise<any> {
     try {
-      // Fetch orders with pending payments or no payments
-      const orders : any = await this.orderRepository
+      const queryBuilder = this.orderRepository
         .createQueryBuilder('orders')
         .leftJoinAndSelect('orders.payments', 'payments')
         .where('orders.delivery = :delivery', { delivery: true })
         .andWhere(
-          `(
-            NOT EXISTS (
-              SELECT 1 
-              FROM payments 
-              WHERE payments.orderId = orders.id
-            )
-            OR (
-              SELECT payments.remainingAmount 
-              FROM payments 
-              WHERE payments.orderId = orders.id 
-              ORDER BY payments.createdAt DESC 
-              LIMIT 1
-            ) > 0
-          )`
-        )
-        .getMany();
-  
+          new Brackets((qb) => {
+            qb.where(
+              `NOT EXISTS (
+          SELECT 1 
+          FROM payments 
+          WHERE payments.orderId = orders.id
+        )`,
+            ).orWhere(
+              `(
+          SELECT payments.remainingAmount 
+          FROM payments 
+          WHERE payments.orderId = orders.id 
+          ORDER BY payments.createdAt DESC 
+          LIMIT 1
+        ) > 0`,
+            );
+          }),
+        );
+
+      if (body.customerId) {
+        queryBuilder.andWhere('orders.customerId = :customerId', {
+          customerId : body.customerId,
+        });
+      }
+
+      const orders: any = await queryBuilder.getMany();
+
       // Check if no orders are found
       if (!orders.length) {
         return errorResponse('No orders with pending payments found', 404);
       }
-  
+
       // Return the fetched orders with a success response
-      return successResponse(orders, 'Pending payment orders fetched successfully');
+      return successResponse(
+        orders,
+        'Pending payment orders fetched successfully',
+      );
     } catch (error) {
       // Log the error for debugging purposes
       console.error('Error fetching pending payment orders:', error);
-  
+
       // Return an error response
-      return errorResponse('An error occurred while fetching pending payment orders', 500);
+      return errorResponse(
+        'An error occurred while fetching pending payment orders',
+        500,
+      );
     }
   }
 }

@@ -14,6 +14,8 @@ import { OilStockModule } from './oil_stock/oil-stock.module';
 import { OilStock } from './oil_stock/oil-stock.entity';
 import { PaymentsModule } from './payments/payments.module';
 import { Payments } from './payments/payments.entity';
+import { Customers } from './customers/customers.entity';
+import { CustomersModule } from './customers/orders.module';
 
 @Module({
   imports: [
@@ -23,14 +25,15 @@ import { Payments } from './payments/payments.entity';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'database.sqlite',
-      entities: [User,Orders,Expense, OilStock, Payments],
+      entities: [User,Orders,Expense, OilStock, Payments, Customers],
       synchronize: true, // Auto-migrate schema, disable in production
     }),
     UserModule,
     OrdersModule,
     ExpenseModule,
     OilStockModule,
-    PaymentsModule
+    PaymentsModule,
+    CustomersModule
   ],
   providers: [JwtGuard,Reflector],
 })

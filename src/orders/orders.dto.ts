@@ -1,12 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsBoolean, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsDateString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateOrderDto {
   @ApiProperty({
-    example: 'Barkat HW',
+    example: 1,
   })
-  @IsString()
-  source: string;
+  @IsNumber()
+  customerId: number;
 
   @ApiProperty({
     example: 'self',
@@ -39,13 +46,22 @@ export class CreateOrderDto {
   price: number;
 }
 
-export class UpdateOrderDto {
+export class GetPendingPyamentDto {
   @ApiPropertyOptional({
-    example: 'Barkat HW',
+    example: 1,
   })
   @IsOptional()
-  @IsString()
-  source?: string;
+  @IsNumber()
+  customerId?: number;
+}
+
+export class UpdateOrderDto {
+  @ApiPropertyOptional({
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  customerId?: number;
 
   @ApiPropertyOptional({
     example: 'self',
@@ -81,41 +97,36 @@ export class UpdateOrderDto {
   @IsOptional()
   @IsNumber()
   price?: number;
-
-  @ApiPropertyOptional({
-    example: 100,
-  })
-  @IsOptional()
-  @IsNumber()
-  cashIn?: number;
-
-  @ApiPropertyOptional({
-    example: 50,
-  })
-  @IsOptional()
-  @IsNumber()
-  balance?: number;
 }
 
-
 export class GetOrdersDto {
-    @ApiProperty({
-      description: 'Start date for the filter',
-      type: String,
-      required: false,
-      example: '2024-11-01T00:00:00Z',
-    })
-    @IsOptional()
-    @IsDateString()
-    startDate?: string;
-  
-    @ApiProperty({
-      description: 'End date for the filter',
-      type: String,
-      required: false,
-      example: '2025-12-30T23:59:59Z',
-    })
-    @IsOptional()
-    @IsDateString()
-    endDate?: string;
-  }
+  @ApiProperty({
+    description: 'Start date for the filter',
+    type: String,
+    required: false,
+    example: '2025-01-01T00:00:00Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @ApiProperty({
+    description: 'End date for the filter',
+    type: String,
+    required: false,
+    example: '2025-12-30T23:59:59Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @ApiProperty({
+    description: 'Customer ID for filtering orders',
+    type: Number,
+    required: false,
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  customerId?: number;
+}

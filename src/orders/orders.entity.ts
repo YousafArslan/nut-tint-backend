@@ -11,16 +11,13 @@ import {
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import { User } from 'src/user/user.entity';
 import { Payments } from 'src/payments/payments.entity';
+import { Customers } from 'src/customers/customers.entity';
 
 @Entity('orders') // Name of the table in SQLite
 export class Orders {
   @PrimaryGeneratedColumn() // Auto-incrementing primary key
   @IsNumber()
   id: number;
-
-  @Column()
-  @IsString()
-  source: string;
 
   @Column()
   @IsString()
@@ -45,7 +42,6 @@ export class Orders {
   @CreateDateColumn({ type: 'datetime' })
   createdAt: string;
 
-  // Using datetime type for update as well
   @UpdateDateColumn({ type: 'datetime' })
   updatedAt: string;
 
@@ -67,4 +63,8 @@ export class Orders {
 
   @OneToMany(() => Payments, (payment) => payment.order, { cascade: true })
   payments: Payments[];
+
+  @ManyToOne(() => Customers, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'customerId' })
+  customer: Customers;
 }
