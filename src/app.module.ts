@@ -10,6 +10,10 @@ import { Reflector } from '@nestjs/core';
 import { User } from './user/user.entity';
 import { Orders } from './orders/orders.entity';
 import { Expense } from './expense/expense.entity';
+import { OilStockModule } from './oil_stock/oil-stock.module';
+import { OilStock } from './oil_stock/oil-stock.entity';
+import { PaymentsModule } from './payments/payments.module';
+import { Payments } from './payments/payments.entity';
 
 @Module({
   imports: [
@@ -19,12 +23,14 @@ import { Expense } from './expense/expense.entity';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'database.sqlite',
-      entities: [User,Orders,Expense],
+      entities: [User,Orders,Expense, OilStock, Payments],
       synchronize: true, // Auto-migrate schema, disable in production
     }),
     UserModule,
     OrdersModule,
-    ExpenseModule
+    ExpenseModule,
+    OilStockModule,
+    PaymentsModule
   ],
   providers: [JwtGuard,Reflector],
 })

@@ -5,6 +5,7 @@ import { Expense } from './expense.entity';
 import { CreateExpenseDto, GetExpensesDto } from './expense.dto';
 import { validate } from 'class-validator';
 import { errorResponse, successResponse } from 'src/response.utils';
+import { User } from 'src/user/user.entity';
 
 @Injectable()
 export class ExpenseService {
@@ -14,7 +15,7 @@ export class ExpenseService {
   ) {}
 
   // Create a new expense
-  async createExpense(expenseData: CreateExpenseDto): Promise<any> {
+  async createExpense(expenseData: CreateExpenseDto, user: User): Promise<any> {
     try {
       // Validate the incoming expense data
       const errors = await validate(expenseData);
@@ -27,9 +28,11 @@ export class ExpenseService {
           400,
         );
       }
-
       // Create a new expense
-      const expense : any = this.expenseRepository.create(expenseData);
+      const expense: any = this.expenseRepository.create({
+        ...expenseData,
+        createdBy: user,
+      });
       await this.expenseRepository.save(expense);
 
       return successResponse(expense, 'Expense created successfully');
@@ -53,9 +56,12 @@ export class ExpenseService {
           where: {
             createdAt: Between(startDate, endDate),
           },
+          relations: ['createdBy', 'updatedBy'], // Include user relationships
         });
       } else {
-        expenses = await this.expenseRepository.find();
+        expenses = await this.expenseRepository.find({
+          relations: ['createdBy', 'updatedBy'], // Include user relationships
+        });
       }
 
       return successResponse(expenses, 'Expenses fetched successfully');
@@ -69,16 +75,21 @@ export class ExpenseService {
   }
 
   // Update an existing expense
-  async updateExpense(id: number, updateData: CreateExpenseDto): Promise<any> {
+  async updateExpense(
+    id: number,
+    updateData: CreateExpenseDto,
+    user: User,
+  ): Promise<any> {
     try {
-      const expense : any = await this.expenseRepository.findOne({
-        where: { id }, 
+      const expense: any = await this.expenseRepository.findOne({
+        where: { id },
+        relations: ['createdBy', 'updatedBy'], // Include user relationships
       });
       if (!expense) {
         return errorResponse('Expense not found', 404);
       }
 
-      Object.assign(expense, updateData);
+      Object.assign(expense, updateData, { updatedBy: user });
       await this.expenseRepository.save(expense);
 
       return successResponse(expense, 'Expense updated successfully');
@@ -95,7 +106,7 @@ export class ExpenseService {
   async deleteExpense(id: number): Promise<any> {
     try {
       const expense = await this.expenseRepository.findOne({
-        where: { id }, 
+        where: { id },
       });
       if (!expense) {
         return errorResponse('Expense not found', 404);

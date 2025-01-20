@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "typeorm": "typeorm",
+    "typeorm:esm": "typeorm-ts-node-esm",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",

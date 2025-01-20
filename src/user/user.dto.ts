@@ -12,7 +12,7 @@ export class SignupDto {
   @MinLength(6)
   password: string;
 
-  @ApiProperty({ example:1 })
+  @ApiProperty({ example:UserRole.ADMIN })
   @IsEnum(UserRole, {
     message: 'Role must be one of admin, manager, or employee',
   })

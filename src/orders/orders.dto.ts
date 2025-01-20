@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, IsBoolean, IsOptional, IsDateString } from 'class-validator';
 
 export class CreateOrderDto {
@@ -37,18 +37,64 @@ export class CreateOrderDto {
   })
   @IsNumber()
   price: number;
+}
 
-  @ApiProperty({
+export class UpdateOrderDto {
+  @ApiPropertyOptional({
+    example: 'Barkat HW',
+  })
+  @IsOptional()
+  @IsString()
+  source?: string;
+
+  @ApiPropertyOptional({
+    example: 'self',
+  })
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @ApiPropertyOptional({
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  quantity?: number;
+
+  @ApiPropertyOptional({
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  delivery?: boolean;
+
+  @ApiPropertyOptional({
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  pickUp?: boolean;
+
+  @ApiPropertyOptional({
     example: 100,
   })
+  @IsOptional()
   @IsNumber()
-  cashIn: number;
+  price?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
+    example: 100,
+  })
+  @IsOptional()
+  @IsNumber()
+  cashIn?: number;
+
+  @ApiPropertyOptional({
     example: 50,
   })
+  @IsOptional()
   @IsNumber()
-  balance: number;
+  balance?: number;
 }
 
 
@@ -67,7 +113,7 @@ export class GetOrdersDto {
       description: 'End date for the filter',
       type: String,
       required: false,
-      example: '2024-11-30T23:59:59Z',
+      example: '2025-12-30T23:59:59Z',
     })
     @IsOptional()
     @IsDateString()

@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Get, Param, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  Req,
+} from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateExpenseDto, GetExpensesDto } from './expense.dto';
@@ -10,8 +18,9 @@ export class ExpenseController {
 
   // Create a new expense
   @Post()
-  async create(@Body() createExpenseDto: CreateExpenseDto) {
-    return this.expenseService.createExpense(createExpenseDto);
+  async create(@Body() createExpenseDto: CreateExpenseDto, @Req() req: any) {
+    const user = req.user;
+    return this.expenseService.createExpense(createExpenseDto, user);
   }
 
   // Get all expenses (optionally filtered by date)
@@ -22,8 +31,13 @@ export class ExpenseController {
 
   // Edit an expense (by id)
   @Put(':id')
-  async update(@Param('id') id: number, @Body() createExpenseDto: CreateExpenseDto) {
-    return this.expenseService.updateExpense(id, createExpenseDto);
+  async update(
+    @Param('id') id: number,
+    @Body() createExpenseDto: CreateExpenseDto,
+    @Req() req: any,
+  ) {
+    const user = req.user;
+    return this.expenseService.updateExpense(id, createExpenseDto, user);
   }
 
   // Delete an expense (by id)
