@@ -42,14 +42,19 @@ async function bootstrap() {
 
   app.use((req, res, next) => {
     if (req.headers.referer && req.headers.referer.includes('/api')) {
-      req.headers.authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhYmNAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM3MzY4MjAyLCJleHAiOjE3MzczNzE4MDJ9.rRyyX3DSiU9VWSVqmcrtTVXNhD73g1Ra9fm--axPXWg';
+      req.headers.authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhYmNAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM4MjE5MTkxLCJleHAiOjE3MzgyMjI3OTF9.SSFzJI2Ufmt2Nm8gpvnXTNjWPGSUYejViKX6_kj0zW4';
     }
     next();
   });
 
+
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(3000);
+  // await app.listen(3000);
+  await  app.listen(3000, '0.0.0.0', () => {
+  console.log('Server running on http://0.0.0.0:3000');
+});
 }
 bootstrap();

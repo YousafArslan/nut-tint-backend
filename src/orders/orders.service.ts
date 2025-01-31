@@ -98,8 +98,13 @@ export class OrdersService {
         queryParams.push(customerId);
       }
       const orders = await this.orderRepository.query(query, queryParams);
+      const updatedOrders = orders.map((order) => ({
+        ...order,
+        pickUp: order.pickUp === 1, // Convert to boolean
+        delivery: order.delivery === 1, // Convert to boolean
+      }));
 
-      return successResponse(orders, 'Orders fetched successfully');
+      return successResponse( updatedOrders,'Orders fetched successfully',);
     } catch (error) {
       console.error(error);
       return errorResponse('An error occurred while fetching orders', 500);
@@ -225,7 +230,7 @@ export class OrdersService {
 
       if (body.customerId) {
         queryBuilder.andWhere('orders.customerId = :customerId', {
-          customerId : body.customerId,
+          customerId: body.customerId,
         });
       }
 
