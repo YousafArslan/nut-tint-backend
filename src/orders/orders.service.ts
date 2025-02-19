@@ -70,46 +70,53 @@ export class OrdersService {
 
   async getAllOrders(getOrdersDto: GetOrdersDto): Promise<any> {
     try {
-      const { startDate, endDate, customerId } = getOrdersDto;
+        let { startDate, endDate, customerId } = getOrdersDto;
 
-      let query = `
-      SELECT 
-        o.*, 
-        c."shopName", 
-        c."name" 
-      FROM "Orders" o
-      LEFT JOIN "Customers" c ON o."customerId" = c."id"
-      WHERE 1=1
-    `;
-      const queryParams: any[] = [];
+        // If no date is provided, default to today's date
+        if (!startDate || !endDate) {
+            const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            startDate = today;
+            endDate = today;
+        }
 
-      if (startDate) {
-        query += ' AND o."createdAt" >= ?';
-        queryParams.push(startDate);
-      }
+        // SQL Query to Fetch Orders
+        let query = `
+        SELECT 
+            o.*, 
+            c."shopName", 
+            c."name" 
+        FROM "Orders" o
+        LEFT JOIN "Customers" c ON o."customerId" = c."id"
+        WHERE DATE(o."createdAt") BETWEEN ? AND ?
+        `;
 
-      if (endDate) {
-        query += ' AND o."createdAt" <= ?';
-        queryParams.push(endDate);
-      }
+        const queryParams: any[] = [startDate, endDate];
 
-      if (customerId) {
-        query += ' AND o."customerId" = ?';
-        queryParams.push(customerId);
-      }
-      const orders = await this.orderRepository.query(query, queryParams);
-      const updatedOrders = orders.map((order) => ({
-        ...order,
-        pickUp: order.pickUp === 1, // Convert to boolean
-        delivery: order.delivery === 1, // Convert to boolean
-      }));
+        if (customerId) {
+            query += ' AND o."customerId" = ?';
+            queryParams.push(customerId);
+        }
 
-      return successResponse( updatedOrders,'Orders fetched successfully',);
+        console.log("Executing Query:", query);
+        console.log("Query Parameters:", queryParams);
+
+        const orders = await this.orderRepository.query(query, queryParams);
+
+        // Convert boolean fields properly
+        const updatedOrders = orders.map(order => ({
+            ...order,
+            pickUp: order.pickUp === 1, // Convert to boolean
+            delivery: order.delivery === 1, // Convert to boolean
+        }));
+
+        console.log("Fetched Orders Count:", updatedOrders.length);
+        return successResponse(updatedOrders, 'Orders fetched successfully');
     } catch (error) {
-      console.error(error);
-      return errorResponse('An error occurred while fetching orders', 500);
+        console.error("Error fetching orders:", error);
+        return errorResponse('An error occurred while fetching orders', 500);
     }
-  }
+}
+
 
   // Get an order by id
   async getOrderById(id: number): Promise<any> {
@@ -207,49 +214,52 @@ export class OrdersService {
       const queryBuilder = this.orderRepository
         .createQueryBuilder('orders')
         .leftJoinAndSelect('orders.payments', 'payments')
+        .leftJoinAndSelect('orders.customer', 'customer') // Include the customer
         .where('orders.delivery = :delivery', { delivery: true })
         .andWhere(
           new Brackets((qb) => {
             qb.where(
               `NOT EXISTS (
-          SELECT 1 
-          FROM payments 
-          WHERE payments.orderId = orders.id
-        )`,
+                SELECT 1 
+                FROM payments 
+                WHERE payments.orderId = orders.id
+              )`,
             ).orWhere(
               `(
-          SELECT payments.remainingAmount 
-          FROM payments 
-          WHERE payments.orderId = orders.id 
-          ORDER BY payments.createdAt DESC 
-          LIMIT 1
-        ) > 0`,
+                SELECT payments.remainingAmount 
+                FROM payments 
+                WHERE payments.orderId = orders.id 
+                ORDER BY payments.createdAt DESC 
+                LIMIT 1
+              ) > 0`,
             );
           }),
         );
-
+  
+      // If customerId is provided, filter the orders by customer
       if (body.customerId) {
         queryBuilder.andWhere('orders.customerId = :customerId', {
           customerId: body.customerId,
         });
       }
-
+  
+      // Execute the query and fetch the results
       const orders: any = await queryBuilder.getMany();
-
+  
       // Check if no orders are found
       if (!orders.length) {
         return errorResponse('No orders with pending payments found', 404);
       }
-
-      // Return the fetched orders with a success response
+  
+      // Return the fetched orders along with customer details
       return successResponse(
         orders,
-        'Pending payment orders fetched successfully',
+        'Pending payment orders with customer details fetched successfully',
       );
     } catch (error) {
       // Log the error for debugging purposes
       console.error('Error fetching pending payment orders:', error);
-
+  
       // Return an error response
       return errorResponse(
         'An error occurred while fetching pending payment orders',
@@ -257,4 +267,18 @@ export class OrdersService {
       );
     }
   }
+  async getPendingOrders(): Promise<any> {
+    try {
+      const orders = await this.orderRepository.find({
+        where: { delivery: false }, // Only fetch orders where deliveredAt is null
+        relations: ['customer'], // You can include relations (like customer) if needed
+      });
+
+      return successResponse(orders, 'Pending orders retrieved successfully');
+    } catch (error) {
+      console.error(error);
+      return errorResponse('An error occurred while retrieving pending orders', 500);
+    }
+  }
+  
 }

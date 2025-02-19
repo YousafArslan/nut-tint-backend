@@ -13,13 +13,6 @@ export class CreateExpenseDto {
     })
     @IsNumber()
     amount: number;
-  
-    @ApiProperty({
-      example: '2024-11-30T14:30:00Z',
-    })
-    @IsOptional()
-    @IsDateString()
-    createdAt?: string; // Optional, defaults to current date if not provided
   }
 
 
@@ -28,7 +21,7 @@ export class CreateExpenseDto {
       description: 'Start date for the filter',
       type: String,
       required: false,
-      example: '2024-11-01T00:00:00Z',
+      example: '2025-02-12T00:00:00Z',
     })
     @IsOptional()
     @IsDateString()
@@ -38,7 +31,7 @@ export class CreateExpenseDto {
       description: 'End date for the filter',
       type: String,
       required: false,
-      example: '2024-11-30T23:59:59Z',
+      example: '2025-02-12T23:59:59Z',
     })
     @IsOptional()
     @IsDateString()

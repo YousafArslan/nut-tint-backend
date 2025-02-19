@@ -15,12 +15,12 @@ export class CreatePaymentDto {
 
 
 export class GetPaymentsDto {
-  @ApiPropertyOptional({ example: '2024-01-01' })
+  @ApiPropertyOptional({ example: '2025-01-01' })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ example: '2024-12-31' })
+  @ApiPropertyOptional({ example: '2025-12-31' })
   @IsOptional()
   @IsDateString()
   endDate?: string;

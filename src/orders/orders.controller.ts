@@ -12,7 +12,12 @@ import {
 import { OrdersService } from './orders.service';
 import { Orders } from './orders.entity';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CreateOrderDto, GetOrdersDto, GetPendingPyamentDto, UpdateOrderDto } from './orders.dto';
+import {
+  CreateOrderDto,
+  GetOrdersDto,
+  GetPendingPyamentDto,
+  UpdateOrderDto,
+} from './orders.dto';
 import { SkipJwt } from 'src/exclude-jwt.decorator';
 
 @ApiTags('Orders')
@@ -39,8 +44,15 @@ export class OrdersController {
   }
 
   @Post('/pending-payments')
-  async getPendingPayments(@Body() getPendingPyamentDto: GetPendingPyamentDto): Promise<any> {
+  async getPendingPayments(
+    @Body() getPendingPyamentDto: GetPendingPyamentDto,
+  ): Promise<any> {
     return await this.ordersService.getPendingPayments(getPendingPyamentDto);
+  }
+
+  @Get('/pendingOrders')
+  async getPendingOrders(): Promise<Orders[]> {
+    return this.ordersService.getPendingOrders();
   }
   // Get a specific order by id
   @Get(':id')
@@ -64,4 +76,5 @@ export class OrdersController {
   async deleteOrder(@Param('id') id: number): Promise<void> {
     return this.ordersService.deleteOrder(id);
   }
+ 
 }

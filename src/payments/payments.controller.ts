@@ -4,7 +4,6 @@ import { CreatePaymentDto, GetPaymentsDto, UpdatePaymentDto } from './payments.d
 import { User } from 'src/user/user.entity';
 import { ApiTags } from '@nestjs/swagger';
 
-
 @ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
@@ -16,8 +15,8 @@ export class PaymentsController {
     return this.paymentsService.createPayment(createPaymentDto, user);
   }
 
-  @Get()
-  async getAllPayments(@Query() getPaymentsDto: GetPaymentsDto) {
+  @Post('/getAll')
+  async getAllPayments(@Body() getPaymentsDto: GetPaymentsDto) {
     return this.paymentsService.getAllPayments(getPaymentsDto);
   }
 
@@ -39,5 +38,12 @@ export class PaymentsController {
   @Delete(':id')
   async deletePayment(@Param('id') id: number) {
     return this.paymentsService.deletePayment(id);
+  }
+
+
+  @Post('/ordersByPaymentDateRange')
+  async getOrdersByPaymentDateRange(@Body() getPaymentsDto: GetPaymentsDto ) {
+    // Call the service method to get orders based on the date range
+    return this.paymentsService.getOrdersByPaymentDateRange(getPaymentsDto);
   }
 }

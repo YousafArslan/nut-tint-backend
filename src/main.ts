@@ -40,14 +40,12 @@ async function bootstrap() {
   .build();
  
 
-  app.use((req, res, next) => {
-    if (req.headers.referer && req.headers.referer.includes('/api')) {
-      req.headers.authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhYmNAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM4MjE5MTkxLCJleHAiOjE3MzgyMjI3OTF9.SSFzJI2Ufmt2Nm8gpvnXTNjWPGSUYejViKX6_kj0zW4';
-    }
-    next();
-  });
-
-
+  // app.use((req, res, next) => {
+  //   if (req.headers.referer && req.headers.referer.includes('/api')) {
+  //     req.headers.authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhYmNAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM5OTQ2MDIwLCJleHAiOjE3Mzk5NDk2MjB9.xakZqmc8GWpPXx9aCISsaOOQNASMDYutT-oUM8rfB6I';
+  //   }
+  //   next();
+  // });
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

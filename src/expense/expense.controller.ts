@@ -39,6 +39,10 @@ export class ExpenseController {
     const user = req.user;
     return this.expenseService.updateExpense(id, createExpenseDto, user);
   }
+  @Post('getExpensesWithTotal')
+  async getExpensesWithTotal(@Body() getExpensesDto: GetExpensesDto) {
+    return this.expenseService.getExpensesWithTotal(getExpensesDto);
+  }
 
   // Delete an expense (by id)
   @Delete(':id')
