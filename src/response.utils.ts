@@ -20,8 +20,8 @@ interface SuccessResponse<T> {
    * @param statusCode The HTTP status code (default is 200).
    */
   export function successResponse<T>(
-    message: string,
     data: T,
+    message: string,
     statusCode: number = 200,
   ): SuccessResponse<T> {
     return {

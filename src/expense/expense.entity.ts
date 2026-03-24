@@ -18,11 +18,11 @@ export class Expense {
   amount: number;  // Column to store the amount of the expense
 
   @CreateDateColumn({ type: 'datetime' })
-  createdAt: string;
+  createdAt: Date;
 
   // Using datetime type for update as well
   @UpdateDateColumn({ type: 'datetime' })
-  updatedAt: string;
+  updatedAt: Date;
 
   // Relationships for user tracking
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })

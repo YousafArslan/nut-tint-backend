@@ -12,6 +12,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export enum OilType {
   BLACK = 'black',
   TYRE = 'tyre',
+  SPECIAL = 'special',
 }
 
 export function IsValidOilTransaction(validationOptions?: ValidationOptions) {

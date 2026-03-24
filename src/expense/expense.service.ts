@@ -48,25 +48,36 @@ export class ExpenseService {
   // Get all expenses with optional date range filter
   async getAllExpenses(getExpensesDto: GetExpensesDto): Promise<any> {
     try {
-      const { startDate, endDate } = getExpensesDto;
+      let { startDate, endDate } = getExpensesDto;
 
-      let expenses: any;
-      if (startDate && endDate) {
-        expenses = await this.expenseRepository.find({
-          where: {
-            createdAt: Between(startDate, endDate),
-          },
-          relations: ['createdBy', 'updatedBy'], // Include user relationships
-        });
-      } else {
-        expenses = await this.expenseRepository.find({
-          relations: ['createdBy', 'updatedBy'], // Include user relationships
-        });
+      // If no date is provided, use the current date
+      if (!startDate || !endDate) {
+        const today = new Date();
+        startDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        endDate = startDate; // Keep same for single day filtering
       }
+
+      // Convert string dates to Date objects and set full day range
+      const startOfDay = new Date(startDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      console.log('Start of Day:', startOfDay);
+      console.log('End of Day:', endOfDay);
+
+      // Fetch expenses within the selected date range
+      const expenses = await this.expenseRepository.find({
+        where: {
+          createdAt: Between(startOfDay, endOfDay),
+        },
+        relations: ['createdBy', 'updatedBy'], // Include related users
+      });
 
       return successResponse(expenses, 'Expenses fetched successfully');
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching expenses:', error);
       return errorResponse(
         'An unexpected error occurred while fetching expenses',
         500,
@@ -121,6 +132,46 @@ export class ExpenseService {
         'An unexpected error occurred while deleting the expense',
         500,
       );
+    }
+  }
+
+  async getExpensesWithTotal(getExpensesDto: GetExpensesDto): Promise<any> {
+    try {
+      let { startDate, endDate } = getExpensesDto;
+
+      if (!startDate || !endDate) {
+        const today = new Date();
+        startDate = today.toISOString().split('T')[0];
+        endDate = startDate;
+      }
+
+      const startOfDay = new Date(startDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // Fetch expenses within the date range and join the createdBy user
+      const expenses = await this.expenseRepository.find({
+        where: {
+          createdAt: Between(startOfDay, endOfDay),
+        },
+        relations: ['createdBy'],  // Include the user who created the expense
+      });
+
+      // Calculate the total sum of all expenses
+      const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+      return successResponse(
+        {
+          expenses,
+          totalAmount,  // Total of all expenses
+        },
+        'Expenses fetched successfully',
+      );
+    } catch (error) {
+      console.error('Error fetching expenses with total:', error);
+      return errorResponse('An unexpected error occurred', 500);
     }
   }
 }

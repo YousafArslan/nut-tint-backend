@@ -26,10 +26,10 @@ export class Payments {
   remainingAmount: number;
 
   @CreateDateColumn({ type: 'datetime' })
-  createdAt: string;
+  createdAt: Date;
 
   @UpdateDateColumn({ type: 'datetime' })
-  updatedAt: string;
+  updatedAt: Date;
 
   // Relationships for user tracking
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })

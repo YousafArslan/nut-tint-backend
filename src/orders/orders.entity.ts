@@ -20,8 +20,8 @@ export class Orders {
   id: number;
 
   @Column()
-  @IsString()
-  type: string;
+  @IsNumber()
+  type: number;
 
   @Column()
   @IsNumber()
@@ -40,10 +40,10 @@ export class Orders {
   price: number;
 
   @CreateDateColumn({ type: 'datetime' })
-  createdAt: string;
+  createdAt: Date;
 
   @UpdateDateColumn({ type: 'datetime' })
-  updatedAt: string;
+  updatedAt: Date;
 
   @Column({ type: 'datetime', nullable: true }) // Nullable for optional updates
   deliveredAt: string;
@@ -64,7 +64,7 @@ export class Orders {
   @OneToMany(() => Payments, (payment) => payment.order, { cascade: true })
   payments: Payments[];
 
-  @ManyToOne(() => Customers, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Customers, { nullable: false, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'customerId' })
   customer: Customers;
 }

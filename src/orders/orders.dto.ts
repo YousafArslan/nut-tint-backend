@@ -16,10 +16,10 @@ export class CreateOrderDto {
   customerId: number;
 
   @ApiProperty({
-    example: 'self',
+    example: 1,
   })
-  @IsString()
-  type: string;
+  @IsNumber()
+  type: number;
 
   @ApiProperty({
     example: 1,
@@ -64,11 +64,11 @@ export class UpdateOrderDto {
   customerId?: number;
 
   @ApiPropertyOptional({
-    example: 'self',
+    example: 1,
   })
   @IsOptional()
-  @IsString()
-  type?: string;
+  @IsNumber()
+  type?: number;
 
   @ApiPropertyOptional({
     example: 1,

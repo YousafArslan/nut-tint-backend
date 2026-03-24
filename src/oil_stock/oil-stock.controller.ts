@@ -8,7 +8,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class OilStockController {
   constructor(private readonly oilStockService: OilStockService) {}
 
-  @Post("/getAll")
+  @Post('/getAll')
   async getAllOilStocks(@Body() getOilStockDto: GetOilStockDto) {
     return await this.oilStockService.getAllOilStocks(getOilStockDto);
   }
@@ -20,5 +20,10 @@ export class OilStockController {
   ) {
     const user = req.user; // Assume user info is available in the request (e.g., via JWT)
     return await this.oilStockService.createOilStock(createOilStockDto, user);
+  }
+  
+  @Post('/remainingOil')
+  async getRemainingOil() {
+    return await this.oilStockService.getRemainingOil();
   }
 }
