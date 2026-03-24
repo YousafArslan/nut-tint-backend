@@ -42,7 +42,7 @@ async function bootstrap() {
 
   app.use((req, res, next) => {
     if (req.headers.referer && req.headers.referer.includes('/api')) {
-      req.headers.authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhYmNAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM3MzY4MjAyLCJleHAiOjE3MzczNzE4MDJ9.rRyyX3DSiU9VWSVqmcrtTVXNhD73g1Ra9fm--axPXWg';
+      req.headers.authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhYmNAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM4NTgwOTY5LCJleHAiOjE3Mzg1ODQ1Njl9.GXIDH3PINqzKTNpgyKyod1Cc6f_KZaQPCZoKjd3kglg';
     }
     next();
   });
