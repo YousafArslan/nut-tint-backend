@@ -10,6 +10,17 @@ import {
 
 export class CreateOrderDto {
   @ApiProperty({
+    description: 'Start date for the filter',
+    type: String,
+    required: false,
+    example: '2025-01-01T00:00:00Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  createdAt?: string;
+
+
+  @ApiProperty({
     example: 1,
   })
   @IsNumber()
