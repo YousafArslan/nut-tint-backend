@@ -67,6 +67,17 @@ export class GetPendingPyamentDto {
 }
 
 export class UpdateOrderDto {
+
+  @ApiProperty({
+    description: 'Start date for the filter',
+    type: String,
+    required: false,
+    example: '2025-01-01T00:00:00Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  createdAt?: string;
+  
   @ApiPropertyOptional({
     example: 1,
   })
