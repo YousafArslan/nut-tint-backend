@@ -40,7 +40,8 @@ lerna-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
-.database.sqlite
+/database.sqlite
+/database.sqbpro
 .env.local
 
 # temp directory
