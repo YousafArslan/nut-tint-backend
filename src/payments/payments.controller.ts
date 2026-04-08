@@ -2,9 +2,10 @@ import { Controller, Get, Post, Body, Param, Put, Delete, Query, Req } from '@ne
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto, GetPaymentsDto, UpdatePaymentDto } from './payments.dto';
 import { User } from 'src/user/user.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Payments')
+@ApiBearerAuth('JWT-auth')
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}

@@ -8,10 +8,11 @@ import {
   Req,
 } from '@nestjs/common';
 import { ExpenseService } from './expense.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateExpenseDto, GetExpensesDto } from './expense.dto';
 
 @ApiTags('Expenses') // Optional, but helpful for Swagger documentation
+@ApiBearerAuth('JWT-auth')
 @Controller('expenses')
 export class ExpenseController {
   constructor(private readonly expenseService: ExpenseService) {}

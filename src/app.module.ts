@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { OrdersModule } from './orders/orders.module';
 import { ExpenseModule } from './expense/expense.module';

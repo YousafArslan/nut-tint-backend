@@ -1,9 +1,10 @@
 import { Controller, Get, Body, Post, Req } from '@nestjs/common';
 import { OilStockService } from './oil-stock.service';
 import { CreateOilStockDto, GetOilStockDto } from './oil-stock.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Oil Stocks')
+@ApiBearerAuth('JWT-auth')
 @Controller('oil-stocks')
 export class OilStockController {
   constructor(private readonly oilStockService: OilStockService) {}
