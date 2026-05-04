@@ -2,6 +2,16 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, IsBoolean, IsOptional, IsDateString, IsNotEmpty } from 'class-validator';
 
 export class CreatePaymentDto {
+  @ApiProperty({
+    description: 'Date for the filter',
+    type: String,
+    required: false,
+    example: '2025-01-01T00:00:00Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  createdAt?: string;
+
   @ApiProperty({ example: 500.0 })
   @IsNumber()
   @IsNotEmpty()

@@ -26,7 +26,7 @@ export class PaymentsService {
     user: User,
   ): Promise<any> {
     try {
-      const { orderId, cashIn } = createPaymentDto;
+      const { orderId, cashIn,createdAt } = createPaymentDto;
 
       // Fetch the related order
       const order: any = await this.ordersRepository.findOne({
@@ -56,7 +56,8 @@ export class PaymentsService {
         cashIn,
         remainingAmount,
         order, // Associate with the fetched order
-        createdBy: user, // Track the user who created this payment
+        createdBy: user, // Track the user who created this paymen
+        createdAt,
       });
 
       await this.paymentsRepository.save(payment);
